@@ -9,6 +9,12 @@ hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1)
 
 cap = cv2.VideoCapture(0)
 
+def get_coords(landmarks, tip, mcp):
+    tip_coord = (int(landmarks[tip].x * w), int(landmarks[tip].y * h))
+    mcp_coord = (int(landmarks[mcp].x * w), int(landmarks[mcp].y * h))
+    
+    return tip_coord, mcp_coord
+
 def get_dist(p0, p1):
     x0, y0 = p0
     x1, y1 = p1
@@ -36,15 +42,19 @@ while cap.isOpened():
         for hand_landmark, hand_nandedness in zip(results.multi_hand_landmarks,results.multi_handedness):
             landmarks = hand_landmark.landmark
 
-            index_tip_finger = (int(landmarks[8].x * w), int(landmarks[8].y * h))
-            index_mcp_finger = (int(landmarks[5].x * w), int(landmarks[5].y * h))
+            index_tip_finger, index_mcp_finger = get_coords(landmarks, 8, 5)
             index_dist = get_dist(index_tip_finger, index_mcp_finger)
 
-            print(index_dist)
+            middle_tip_finger, middle_mcp_finger = get_coords(landmarks, 12, 9)
+            middle_dist = get_dist(middle_tip_finger, middle_mcp_finger)
+
+            print(index_dist, middle_dist)
 
             cv2.circle(frame, index_tip_finger, 3, (0, 0, 255), -1)
             cv2.circle(frame, index_mcp_finger, 3, (0, 0, 255), -1)
 
+            cv2.circle(frame, middle_tip_finger, 3, (0, 0, 255), -1)
+            cv2.circle(frame, middle_mcp_finger, 3, (0, 0, 255), -1)
     else:
         print('not found')
     
