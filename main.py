@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 from math import sqrt, pow
+from pyautogui import press 
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -58,6 +59,7 @@ while cap.isOpened():
         current_state = all(fingers_closed)
 
         if previous_state == False and current_state == True:
+            press('space')
             print('рука закрылась')
 
         previous_state = current_state
