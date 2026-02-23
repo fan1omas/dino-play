@@ -2,9 +2,10 @@ import cv2
 import numpy as np
 import mediapipe as mp
 from math import sqrt, pow
-from pyautogui import press, keyDown, keyUp, FAILSAFE
+from pyautogui import press, keyDown, keyUp
+import signal
+import sys 
 
-FAILSAFE = False
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.3)
@@ -33,63 +34,67 @@ def get_dist(p0, p1):
 
     return sqrt(c1+c2)
 
-while cap.isOpened():
-    status, frame = cap.read()
-    h, w, _ = frame.shape
+try: 
+    while cap.isOpened():
+        status, frame = cap.read()
+        h, w, _ = frame.shape
 
-    current_state = None
-    current_thumb_state = None
+        current_state = None
+        current_thumb_state = None
 
-    if not status:
-        break
+        if not status:
+            break
 
-    if cv2.waitKey(20) == 27:
-        break
-    
-    frame = cv2.flip(frame, 1)
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(rgb_frame)
-
-    if results.multi_hand_landmarks is not None:
-        fingers_closed = [] 
-
-        for hand_landmark, hand_nandedness in zip(results.multi_hand_landmarks,results.multi_handedness):
-            landmarks = hand_landmark.landmark
-
-            for dot in dots:
-                tip_y, pip_y = [i[1] for i in get_coords(landmarks, dot[0], dot[1])]
-                fingers_closed.append(tip_y > pip_y)  # y=0 вверху
-
-        current_state = all(fingers_closed)
-
-        if prev_state == False and current_state == True:
-            press('up')
-            print('рука закрылась')
-
-        prev_state = current_state
-        fingers_closed.clear()
-
-        thumb_tip, _ = get_coords(landmarks, 4, 1)
-        _, pinky_mcp = get_coords(landmarks, 20, 17)
-
-        thumb_tip_To_pinky_mcp_dist = get_dist(thumb_tip, pinky_mcp)
-
-        current_thumb_state = thumb_tip_To_pinky_mcp_dist < 20
+        if cv2.waitKey(20) == 27:
+            break
         
-        if current_thumb_state:
-            keyDown('down')
+        frame = cv2.flip(frame, 1)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = hands.process(rgb_frame)
+
+        if results.multi_hand_landmarks is not None:
+            fingers_closed = [] 
+
+            for hand_landmark, hand_nandedness in zip(results.multi_hand_landmarks,results.multi_handedness):
+                landmarks = hand_landmark.landmark
+
+                for dot in dots:
+                    tip_y, pip_y = [i[1] for i in get_coords(landmarks, dot[0], dot[1])]
+                    fingers_closed.append(tip_y > pip_y)  # y=0 вверху
+
+            current_state = all(fingers_closed)
+
+            if prev_state == False and current_state == True:
+                press('up')
+                print('рука закрылась')
+
+            prev_state = current_state
+            fingers_closed.clear()
+
+            thumb_tip, _ = get_coords(landmarks, 4, 1)
+            _, pinky_mcp = get_coords(landmarks, 20, 17)
+
+            thumb_tip_To_pinky_mcp_dist = get_dist(thumb_tip, pinky_mcp)
+
+            current_thumb_state = thumb_tip_To_pinky_mcp_dist < 20
+            
+            if current_thumb_state:
+                keyDown('down')
+            else:
+                keyUp('down')
+            
         else:
-            keyUp('down')
-         
-    else:
-        is_closed = None
-        prev_state = None
-        prev_thumb_state = None
-        print('РУКА НЕ ОБНАРУЖЕНА')
-    
+            is_closed = None
+            prev_state = None
+            prev_thumb_state = None
+            print('РУКА НЕ ОБНАРУЖЕНА')
+        
 
-    cv2.imshow('frame', frame)
+        cv2.imshow('frame', frame)
 
 
-cap.release()
-cv2.destroyAllWindows()
+
+    cap.release()
+    cv2.destroyAllWindows()
+except KeyboardInterrupt:
+        sys.exit(0)
