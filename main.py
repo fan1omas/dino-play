@@ -12,8 +12,7 @@ dots = ((8, 6),   # указательный
         (16, 14), # безымянный
         (20, 18)) # мизинец
 
-is_closed = None
-
+previous_state = None
 cap = cv2.VideoCapture(0)
 
 def get_coords(landmarks, tip, pip):
@@ -33,6 +32,8 @@ def get_dist(p0, p1):
 while cap.isOpened():
     status, frame = cap.read()
     h, w, _ = frame.shape
+
+    current_state = None
 
     if not status:
         break
@@ -54,13 +55,12 @@ while cap.isOpened():
                 tip_y, pip_y = [i[1] for i in get_coords(landmarks, dot[0], dot[1])]
                 fingers_closed.append(tip_y > pip_y)  # y=0 вверху
 
-        if all(fingers_closed) != is_closed:
-            if is_closed: 
-                print('Рука открылась')
-            else:
-                print('Рука закрылась')
+        current_state = all(fingers_closed)
 
-        is_closed = all(fingers_closed)
+        if previous_state == False and current_state == True:
+            print('рука закрылась')
+
+        previous_state = current_state
         fingers_closed.clear()
          
     else:
