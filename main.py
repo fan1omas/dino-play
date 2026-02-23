@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 import mediapipe as mp
 from math import sqrt, pow
-from pyautogui import press 
+from pyautogui import press, keyDown, keyUp, FAILSAFE
 
+FAILSAFE = False
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.3)
@@ -13,8 +14,10 @@ dots = ((8, 6),   # указательный
         (16, 14), # безымянный
         (20, 18)) # мизинец
 
-previous_state = None
-cap = cv2.VideoCapture(0)
+prev_state = None
+
+
+cap = cv2.VideoCapture(0)  
 
 def get_coords(landmarks, tip, pip):
     tip_coord = (int(landmarks[tip].x * w), int(landmarks[tip].y * h))
@@ -35,6 +38,7 @@ while cap.isOpened():
     h, w, _ = frame.shape
 
     current_state = None
+    current_thumb_state = None
 
     if not status:
         break
@@ -58,15 +62,29 @@ while cap.isOpened():
 
         current_state = all(fingers_closed)
 
-        if previous_state == False and current_state == True:
-            press('space')
+        if prev_state == False and current_state == True:
+            press('up')
             print('рука закрылась')
 
-        previous_state = current_state
+        prev_state = current_state
         fingers_closed.clear()
+
+        thumb_tip, _ = get_coords(landmarks, 4, 1)
+        _, pinky_mcp = get_coords(landmarks, 20, 17)
+
+        thumb_tip_To_pinky_mcp_dist = get_dist(thumb_tip, pinky_mcp)
+
+        current_thumb_state = thumb_tip_To_pinky_mcp_dist < 20
+        
+        if current_thumb_state:
+            keyDown('down')
+        else:
+            keyUp('down')
          
     else:
         is_closed = None
+        prev_state = None
+        prev_thumb_state = None
         print('РУКА НЕ ОБНАРУЖЕНА')
     
 
