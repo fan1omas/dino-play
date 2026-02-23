@@ -12,6 +12,7 @@ dots = ((8, 6),   # указательный
         (16, 14), # безымянный
         (20, 18)) # мизинец
 
+is_closed = None
 
 cap = cv2.VideoCapture(0)
 
@@ -53,14 +54,17 @@ while cap.isOpened():
                 tip_y, pip_y = [i[1] for i in get_coords(landmarks, dot[0], dot[1])]
                 fingers_closed.append(tip_y > pip_y)  # y=0 вверху
 
-        if all(fingers_closed):
-            print('РУКА СОГНУТА')
-        else:
-            print('РУКА ОТКРЫТА')
+        if all(fingers_closed) != is_closed:
+            if is_closed: 
+                print('Рука открылась')
+            else:
+                print('Рука закрылась')
 
+        is_closed = all(fingers_closed)
         fingers_closed.clear()
          
     else:
+        is_closed = None
         print('РУКА НЕ ОБНАРУЖЕНА')
     
 
