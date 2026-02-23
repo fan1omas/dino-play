@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 import mediapipe as mp
 from math import sqrt, pow
 from pyautogui import press, keyDown, keyUp
@@ -96,5 +95,6 @@ try:
 
     cap.release()
     cv2.destroyAllWindows()
+
 except KeyboardInterrupt:
-        sys.exit(0)
+    sys.exit(0)
