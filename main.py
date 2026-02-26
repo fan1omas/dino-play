@@ -66,7 +66,6 @@ try:
 
             if prev_state == False and current_state == True:
                 press('up')
-                print('рука закрылась')
 
             prev_state = current_state
             fingers_closed.clear()
@@ -77,8 +76,6 @@ try:
             thumb_tip_To_pinky_mcp_dist = get_dist(thumb_tip, pinky_mcp)
 
             current_thumb_state = thumb_tip_To_pinky_mcp_dist < 20
-            
-            #print(thumb_tip_To_pinky_mcp_dist)
 
             if prev_thumb_state == False and current_thumb_state == True: 
                 keyDown('down')
@@ -91,9 +88,7 @@ try:
         else:
             is_closed = None
             prev_state = None
-            prev_thumb_state = None
-            print('РУКА НЕ ОБНАРУЖЕНА')
-        
+            prev_thumb_state = None        
 
         cv2.imshow('frame', frame)
 
