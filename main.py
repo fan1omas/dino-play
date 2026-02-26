@@ -15,6 +15,7 @@ dots = ((8, 6),   # указательный
         (20, 18)) # мизинец
 
 prev_state = None
+prev_thumb_state = None
 
 
 cap = cv2.VideoCapture(0)  
@@ -77,10 +78,15 @@ try:
 
             current_thumb_state = thumb_tip_To_pinky_mcp_dist < 20
             
-            if current_thumb_state:
+            #print(thumb_tip_To_pinky_mcp_dist)
+
+            if prev_thumb_state == False and current_thumb_state == True: 
                 keyDown('down')
-            else:
+            
+            if prev_thumb_state == True and current_thumb_state == False:
                 keyUp('down')
+
+            prev_thumb_state = current_thumb_state
             
         else:
             is_closed = None
